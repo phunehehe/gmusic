@@ -4,6 +4,8 @@ from collections import Counter
 import re
 from gmusicapi.api import Api
 
+import credentials
+
 
 def check_playlists(api):
 
@@ -78,11 +80,11 @@ def reset_play_count(api):
 def main():
 
     api = Api()
-    if not api.login('phunehehe@gmail.com', 'erondhtzzmsrkjtz'):
+    if not api.login(credentials.email, credentials.password):
         print "Couldn't log in :("
         return
 
-    check_playlists(api)
+    #check_playlists(api)
     #fix_metadata(api)
     #fix_flac
     #reset_play_count(api)
