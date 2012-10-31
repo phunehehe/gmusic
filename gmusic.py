@@ -2,6 +2,7 @@
 
 from gmusicapi.api import Api
 import random
+import unicodedata
 
 import credentials
 
@@ -48,7 +49,7 @@ def regen_playlist(api):
     # Take random songs from the weighted list
     needle = random.sample(haystack, 50)
     for song in needle:
-        print song['playCount'], song['title']
+        print song['playCount'], unicodedata.normalize('NFKD', song['title']).encode('ascii','ignore')
 
     # And use that to update the playlist
     api.change_playlist(playlist_neglected, needle)

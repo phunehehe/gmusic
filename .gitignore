@@ -2,3 +2,4 @@
 *.swp
 /credentials.py
 /gmusicapi.log
+/python_env
