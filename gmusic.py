@@ -7,27 +7,11 @@ import unicodedata
 import credentials
 
 
-def regen_playlist(api):
-
-    # Find the correct playlists
-    playlist_all = None
-    playlist_neglected = None
-
-    for playlist_name, playlist_id in api.get_all_playlist_ids(auto=False).values()[0].iteritems():
-
-        if playlist_name == 'All':
-            playlist_all = playlist_id
-            if playlist_neglected:
-                break
-
-        elif playlist_name == 'Neglected':
-            playlist_neglected = playlist_id
-            if playlist_all:
-                break
+def regen_playlist(api, source, destination, length=50):
 
     # Put songs into a map with play counts as keys
     song_index = {}
-    songs = api.get_playlist_songs(playlist_all)
+    songs = api.get_playlist_songs(source)
 
     for song in songs:
         play_count = song['playCount']
@@ -47,12 +31,12 @@ def regen_playlist(api):
         haystack.extend(songs * weight)
 
     # Take random songs from the weighted list
-    needle = random.sample(haystack, 50)
+    needle = random.sample(haystack, length)
     for song in needle:
         print song['playCount'], unicodedata.normalize('NFKD', song['title']).encode('ascii','ignore')
 
     # And use that to update the playlist
-    api.change_playlist(playlist_neglected, needle)
+    api.change_playlist(destination, needle)
 
 
 def main():
@@ -62,7 +46,9 @@ def main():
         print "Couldn't log in :("
         return
 
-    regen_playlist(api)
+    playlists = api.get_all_playlist_ids(auto=False).values()[0]
+    regen_playlist(api, playlists['All'], playlists['Neglected'])
+    regen_playlist(api, playlists['Programming'], playlists['NewProgramming'])
 
 
 if __name__ == '__main__':
