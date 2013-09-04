@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from gmusicapi import Webclient
+from gmusicapi import Mobileclient
 from gmusic import regen_playlist
 
 import credentials
@@ -8,7 +8,7 @@ import credentials
 
 def main():
 
-    api = Webclient()
+    api = Mobileclient()
     if not api.login(credentials.email, credentials.password):
         print "Couldn't log in :("
         return
