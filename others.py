@@ -1,41 +1,53 @@
 #!/usr/bin/env python
 
 from collections import Counter
-from gmusicapi.api import Api
-import random
-import re
+from gmusicapi import Mobileclient
+import json
 
 import credentials
 
 
 def check_playlists(api):
 
-    playlists = {}
-    for playlist_name, playlist_id in api.get_all_playlist_ids(auto=False).values()[0].iteritems():
-        print 'Looking for duplicates in %s' % playlist_name
-        playlist_songs = [song['id'] for song in api.get_playlist_songs(playlist_id)]
-        counter = Counter(playlist_songs)
-        print [song for song in counter if counter[song] > 1]
-        playlists[playlist_name] = playlist_songs
+    playlists = api.get_all_user_playlist_contents()
+    songs = api.get_all_songs()
+
+    def get_songs_from_playlist(playlist_name):
+        playlist = next(p for p in playlists if p['name'] == playlist_name)
+        return playlist['tracks']
+
+    for playlist in playlists:
+        print 'Looking for duplicates in %s' % playlist['name']
+        counter = Counter((track['trackId'] for track in playlist['tracks']))
+        for track_id in counter:
+            if counter[track_id] > 1:
+                song = next(s for s in songs if s['id'] == track_id)
+                print song['title']
 
     print 'Looking for uncategoried songs'
-    all_songs = playlists['All']
-    programming_songs = playlists['Programming']
-    non_programming_songs = playlists['NonProgramming']
+    all_songs = [track['id'] for track in get_songs_from_playlist('All')]
+    programming_songs = [track['id'] for track in get_songs_from_playlist('Programming')]
+    non_programming_songs = [track['id'] for track in get_songs_from_playlist('NonProgramming')]
+    for song in songs:
+        if (song['id'] not in all_songs and
+            song['id'] not in programming_songs and
+            song['id'] not in non_programming_songs):
+           print song['title']
 
-    songs = api.get_all_songs()
+    print 'Looking for miscategorized songs'
+    print set.intersection(*map(set, [all_songs, programming_songs, non_programming_songs]))
+
+    print 'Looking for something weird'
     song_ids = [song['id'] for song in songs]
+    all_songs = get_songs_from_playlist('All')
+    programming_songs = get_songs_from_playlist('Programming')
+    non_programming_songs = get_songs_from_playlist('NonProgramming')
+    for playlist in [all_songs, programming_songs, non_programming_songs]:
+        for track in playlist:
+            if track['trackId'] not in song_ids:
+                print json.dumps(track)
 
-    weird_song_ids = [song for song in song_ids if
-            song not in all_songs and
-            song not in programming_songs and
-            song not in non_programming_songs]
-    weird_songs = [song for song in songs if song['id'] in weird_song_ids]
-
-    for song in weird_songs:
-        print '%s: %s' % (song['album'], song['name'])
-
-    if len(songs) != (len(all_songs) + + len(programming_songs) + len(non_programming_songs)):
+    if len(songs) != (len(all_songs) + len(programming_songs) + len(non_programming_songs)):
         print 'Something is wrong'
 
 
@@ -75,16 +87,15 @@ def reset_play_count(api):
 
 def main():
 
-    api = Api()
+    api = Mobileclient()
     if not api.login(credentials.email, credentials.password):
         print "Couldn't log in :("
         return
 
-    #regen_playlist(api)
-    check_playlists(api)
+    #check_playlists(api)
     #fix_metadata(api)
     #fix_flac(api)
-    #reset_play_count(api)
+    reset_play_count(api)
 
 
 if __name__ == '__main__':
