@@ -2,15 +2,18 @@
 
 import random
 import unicodedata
+import json
+from datetime import datetime
 
 
-def regen_playlist(api, source_name, destination_name, length=20):
+def regen_playlist(api, source_name, length=20):
 
     playlists = api.get_all_user_playlist_contents()
     songs = api.get_all_songs()
 
     source = next(p for p in playlists if p['name'] == source_name)
-    destination_id = api.create_playlist(destination_name)
+    now = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    destination_id = api.create_playlist('%s %s' % (source_name, now))
 
 
     # Put songs into a map with play counts as keys
@@ -18,7 +21,12 @@ def regen_playlist(api, source_name, destination_name, length=20):
 
     for track in source['tracks']:
         track_id = track['trackId']
-        song = next(s for s in songs if s['id'] == track_id)
+        try:
+            song = next(s for s in songs if s['id'] == track_id)
+        except StopIteration:
+            print 'Something is wrong with track'
+            print json.dumps(track)
+            continue
         play_count = song['playCount']
         if play_count not in song_index:
             song_index[play_count] = [track_id]
@@ -26,7 +34,8 @@ def regen_playlist(api, source_name, destination_name, length=20):
             song_index[play_count].append(track_id)
 
 
-    # Put songs into a weighted list, songs with lower play count appears more times
+    # Put songs into a weighted list, songs with lower play count appears more
+    # times
     max_weight = max(song_index.iterkeys())
     haystack = []
     for play_count, songs in song_index.iteritems():

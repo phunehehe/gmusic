@@ -13,8 +13,8 @@ def main():
         print "Couldn't log in :("
         return
 
-    regen_playlist(api, 'All', '_All', 20)
-    regen_playlist(api, 'Programming', '_Programming', 20)
+    regen_playlist(api, 'All')
+    regen_playlist(api, 'Programming')
 
 
 if __name__ == '__main__':
