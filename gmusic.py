@@ -6,11 +6,11 @@ import unicodedata
 
 def regen_playlist(api, source_name, destination_name, length=20):
 
-    playlists = api.get_all_playlist_contents()
+    playlists = api.get_all_user_playlist_contents()
     songs = api.get_all_songs()
 
     source = next(p for p in playlists if p['name'] == source_name)
-    destination = next(p for p in playlists if p['name'] == destination_name)
+    destination_id = api.create_playlist(destination_name)
 
 
     # Put songs into a map with play counts as keys
@@ -38,6 +38,4 @@ def regen_playlist(api, source_name, destination_name, length=20):
     # Take random songs from the weighted list
     needle = random.sample(haystack, length)
 
-    playlist_entries = [track['id'] for track in destination['tracks']]
-    api.remove_entries_from_playlist(playlist_entries)
-    api.add_songs_to_playlist(destination['id'], needle)
+    api.add_songs_to_playlist(destination_id, needle)
