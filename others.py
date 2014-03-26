@@ -17,12 +17,20 @@ def check_playlists(api):
         return playlist['tracks']
 
     for playlist in playlists:
-        print 'Looking for duplicates in %s' % playlist['name']
+        print ('Looking for duplicates in %s' % playlist['name']).encode('utf-8')
         counter = Counter((track['trackId'] for track in playlist['tracks']))
+        count = 0
         for track_id in counter:
             if counter[track_id] > 1:
                 song = next(s for s in songs if s['id'] == track_id)
                 print song['title']
+                count += 1
+        #print count
+        #if count > 0:
+        #    destination_id = api.create_playlist('ah doh')
+        #    track_ids = [track['trackId'] for track in playlist['tracks']]
+        #    api.add_songs_to_playlist(destination_id, list(set(track_ids)))
+        #    break
 
     print 'Looking for uncategoried songs'
     all_songs = [track['trackId'] for track in get_songs_from_playlist('All')]
@@ -32,7 +40,7 @@ def check_playlists(api):
         if (song['id'] not in all_songs and
             song['id'] not in programming_songs and
             song['id'] not in non_programming_songs):
-           print song['title']
+            print song['title']
 
     print 'Looking for miscategorized songs'
     print set.intersection(*map(set, [all_songs, programming_songs, non_programming_songs]))
@@ -92,10 +100,10 @@ def main():
         print "Couldn't log in :("
         return
 
-    #check_playlists(api)
+    check_playlists(api)
     #fix_metadata(api)
     #fix_flac(api)
-    reset_play_count(api)
+    #reset_play_count(api)
 
 
 if __name__ == '__main__':
