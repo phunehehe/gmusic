@@ -25,9 +25,9 @@ def check_playlists(api):
                 print song['title']
 
     print 'Looking for uncategoried songs'
-    all_songs = [track['id'] for track in get_songs_from_playlist('All')]
-    programming_songs = [track['id'] for track in get_songs_from_playlist('Programming')]
-    non_programming_songs = [track['id'] for track in get_songs_from_playlist('NonProgramming')]
+    all_songs = [track['trackId'] for track in get_songs_from_playlist('All')]
+    programming_songs = [track['trackId'] for track in get_songs_from_playlist('Programming')]
+    non_programming_songs = [track['trackId'] for track in get_songs_from_playlist('NonProgramming')]
     for song in songs:
         if (song['id'] not in all_songs and
             song['id'] not in programming_songs and
